@@ -1,0 +1,179 @@
+# Blog Backend Architecture
+
+## API Endpoints Structure
+
+### Authentication Endpoints
+```
+POST   /api/auth/login          # Admin login
+POST   /api/auth/logout         # Admin logout  
+GET    /api/auth/verify         # Verify JWT token
+POST   /api/auth/refresh        # Refresh JWT token
+```
+
+### Blog Post Endpoints
+```
+# Public endpoints (for frontend viewing)
+GET    /api/posts               # Get all published posts (with pagination)
+GET    /api/posts/{slug}        # Get single post by slug
+GET    /api/posts/tags          # Get all available tags
+GET    /api/posts/tag/{tag}     # Get posts by tag
+
+# Admin endpoints (JWT protected)
+POST   /api/admin/posts         # Create new post
+PUT    /api/admin/posts/{id}    # Update existing post
+DELETE /api/admin/posts/{id}    # Delete post
+GET    /api/admin/posts         # Get all posts (including drafts)
+GET    /api/admin/posts/{id}    # Get post by ID for editing
+PATCH  /api/admin/posts/{id}/publish    # Publish/unpublish post
+```
+
+### Image/Media Endpoints
+```
+POST   /api/admin/upload        # Upload image(s)
+DELETE /api/admin/upload/{filename}  # Delete image
+GET    /api/uploads/{filename}  # Serve uploaded images
+```
+
+### Utility Endpoints
+```
+GET    /api/health              # Health check
+GET    /api/stats               # Blog statistics (post count, etc.)
+```
+
+## Code Structure
+
+### 1. Entry Point (`public/index.php`)
+- Bootstrap the application
+- Load environment variables
+- Initialize router
+- Handle CORS
+- Route requests to controllers
+
+### 2. Configuration Layer (`src/Config/`)
+- **Database.php**: Database connection and configuration
+- **Config.php**: Application-wide configuration
+- **Routes.php**: Define all API routes
+
+### 3. Core Utilities (`src/Utils/`)
+- **Router.php**: Handle HTTP routing and middleware
+- **Response.php**: Standardized JSON responses
+- **Logger.php**: Application logging
+- **Validator.php**: Input validation utilities
+- **JWT.php**: JWT token handling
+
+### 4. Middleware (`src/Middleware/`)
+- **AuthMiddleware.php**: JWT authentication verification
+- **CorsMiddleware.php**: Handle CORS headers
+- **RateLimitMiddleware.php**: API rate limiting (optional)
+
+### 5. Models (`src/Models/`)
+- **Post.php**: Blog post data model and database operations
+- **User.php**: Admin user model
+- **Image.php**: Image/media file model
+- **BaseModel.php**: Common database operations
+
+### 6. Controllers (`src/Controllers/`)
+- **PostController.php**: Handle all post-related operations
+- **AuthController.php**: Handle authentication operations
+- **ImageController.php**: Handle image upload/management
+- **AdminController.php**: Admin-specific operations
+
+### 7. Services (`src/Services/`)
+- **PostService.php**: Business logic for posts (validation, formatting)
+- **ImageService.php**: Image processing and file handling
+- **AuthService.php**: Authentication business logic
+- **SlugService.php**: Generate and validate slugs
+
+### 8. Database (`src/Database/`)
+- **migrations/**: SQL files for database schema
+- **seeds/**: Sample data for development
+
+## Request/Response Flow
+
+```
+1. Request comes to public/index.php
+2. Router matches the URL to a route
+3. Middleware chain executes (CORS, Auth, etc.)
+4. Controller method is called
+5. Controller uses Service for business logic
+6. Service uses Model for database operations
+7. Response is formatted and returned as JSON
+```
+
+## Data Models Structure
+
+### Post Model Properties
+```php
+- id: int (auto-increment)
+- title: string
+- slug: string (unique)
+- content: text (markdown)
+- description: string (meta description)
+- author: string
+- image_src: string (path to main image)
+- image_alt: string
+- image_position_x: string (e.g., "50%")
+- image_position_y: string (e.g., "20%")
+- tags: array (stored as JSON or separate table)
+- status: enum ('draft', 'published')
+- pub_date: timestamp
+- updated_date: timestamp
+- created_at: timestamp
+- updated_at: timestamp
+```
+
+### Response Format Standards
+```json
+{
+  "success": true,
+  "data": {
+    // Response data here
+  },
+  "message": "Operation completed successfully",
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 50
+  }
+}
+```
+
+### Error Response Format
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input data",
+    "details": {
+      "title": ["Title is required"],
+      "slug": ["Slug must be unique"]
+    }
+  }
+}
+```
+
+## Security Considerations
+
+### Input Validation
+- Validate all input data
+- Sanitize HTML content
+- Check file upload types and sizes
+- Prevent SQL injection with prepared statements
+
+### Authentication
+- JWT tokens for admin authentication
+- Token expiration and refresh
+- Secure password hashing
+
+### File Security
+- Restrict upload file types
+- Generate unique filenames
+- Store uploads outside web root (or with proper .htaccess)
+- Image processing and validation
+
+### API Security
+- Rate limiting
+- CORS configuration
+- Input size limits
+- SQL injection prevention
