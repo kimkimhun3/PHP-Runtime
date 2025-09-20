@@ -1,0 +1,35 @@
+# Environment files
+.env
+
+# Vendor directory
+/vendor/
+
+# Logs
+/logs/*.log
+
+# Uploaded files (optional - you might want to track some)
+/public/uploads/*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Composer
+composer.phar
+composer.lock
