@@ -1,0 +1,171 @@
+API Documentation
+🗄️ Database Schema
+Database Setup Commands
+-- Create database and user
+CREATE DATABASE blog_db;
+CREATE USER blog_user WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE blog_db TO blog_user;
+GRANT USAGE ON SCHEMA public TO blog_user;
+GRANT CREATE ON SCHEMA public TO blog_user;
+ALTER DATABASE blog_db OWNER TO blog_user;
+
+Tables Structure
+1. Users Table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    role VARCHAR(20) DEFAULT 'admin',
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes
+CREATE INDEX idx_users_email ON users(email);
+
+-- Default admin user (password: 'admin')
+INSERT INTO users (email, password_hash, name) 
+VALUES ('admin@blog.com', 'admin', 'Admin User');
+
+2. Posts Table
+CREATE TABLE posts (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    content TEXT NOT NULL,
+    description TEXT,
+    author VARCHAR(100) NOT NULL DEFAULT 'Kimhoon Rin',
+    
+    -- Image properties
+    image_src VARCHAR(500),
+    image_alt VARCHAR(255),
+    image_position_x VARCHAR(10) DEFAULT '50%',
+    image_position_y VARCHAR(10) DEFAULT '50%',
+    
+    -- Post metadata
+    tags JSONB DEFAULT '[]',
+    status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+    
+    -- Dates
+    pub_date TIMESTAMP,
+    updated_date TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes
+CREATE INDEX idx_posts_slug ON posts(slug);
+CREATE INDEX idx_posts_status ON posts(status);
+CREATE INDEX idx_posts_pub_date ON posts(pub_date);
+CREATE INDEX idx_posts_author ON posts(author);
+
+
+3. Images Table
+CREATE TABLE images (
+    id SERIAL PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL UNIQUE,
+    original_name VARCHAR(255) NOT NULL,
+    path VARCHAR(500) NOT NULL,
+    size INTEGER NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    width INTEGER,
+    height INTEGER,
+    post_id INTEGER REFERENCES posts(id) ON DELETE SET NULL,
+    alt_text VARCHAR(255),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes
+CREATE INDEX idx_images_filename ON images(filename);
+CREATE INDEX idx_images_post_id ON images(post_id);
+CREATE INDEX idx_images_mime_type ON images(mime_type);
+
+
+🌐 API Endpoints Documentation
+Base URL
+http://localhost:8000
+Authentication
+All admin endpoints require JWT token in header:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+🔓 Public Endpoints
+Health Check
+httpGET /api/health
+
+Description: Check API status
+Authentication: None
+Response:
+json{
+  "success": true,
+  "data": {
+    "status": "OK",
+    "timestamp": "2025-01-20 10:30:00",
+    "version": "1.0.0"
+  },
+  "message": "API is running"
+}
+
+
+Get Blog Statistics
+httpGET /api/stats
+Description: Get blog statistics
+Authentication: None
+Response:
+{
+  "success": true,
+  "data": {
+    "total_posts": 5,
+    "draft_posts": 2,
+    "published_posts": 3,
+    "total_views": 0
+  },
+  "message": "Statistics retrieved successfully"
+}
+
+Get Published Posts
+httpGET /api/posts
+
+Description: Get all published posts with pagination
+Authentication: None
+Query Parameters:
+
+page (integer, optional): Page number (default: 1)
+limit (integer, optional): Posts per page (default: 10, max: 100)
+search (string, optional): Search in title, content, description
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "title": "My Blog Post",
+      "slug": "my-blog-post",
+      "content": "# Blog content...",
+      "description": "Post description",
+      "author": "Kimhoon Rin",
+      "image_src": "/uploads/image.jpg",
+      "image_alt": "Image description",
+      "image_position_x": "50%",
+      "image_position_y": "20%",
+      "tags": ["tag1", "tag2"],
+      "status": "published",
+      "pub_date": "2025-01-20T10:30:00Z",
+      "created_at": "2025-01-20T10:30:00Z",
+      "updated_at": "2025-01-20T10:30:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "pages": 1,
+    "has_next": false,
+    "has_prev": false
+  },
+  "message": "Posts retrieved successfully"
+}

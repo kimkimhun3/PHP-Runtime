@@ -2,8 +2,6 @@
 
 namespace Blog\Models;
 
-use Blog\Config\Config;
-
 class User extends BaseModel
 {
     protected string $table = 'users';
@@ -45,14 +43,6 @@ class User extends BaseModel
             return null;
         }
 
-        // For development: check if password_hash is just a plain password
-        if (Config::isDevelopment() && $user['password_hash'] === $password) {
-            error_log("Plain password match for development");
-            unset($user['password_hash']);
-            return $user;
-        }
-
-        // Normal password hash verification
         if (!password_verify($password, $user['password_hash'])) {
             error_log("Password verification failed for: " . $email);
             return null;
