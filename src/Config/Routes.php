@@ -78,13 +78,24 @@ $router->group('/api/admin/posts', [AuthMiddleware::class], function($router) {
     $router->patch('/{id}/publish', [PostController::class, 'togglePublish']);
 });
 
-// Image/Media routes
+// Enhanced Image Management Routes
 $router->group('/api/admin', [AuthMiddleware::class], function($router) {
-    // Upload image(s)
+    // Basic upload endpoints (existing)
     $router->post('/upload', [ImageController::class, 'upload']);
-    
-    // Delete image
     $router->delete('/upload/{filename}', [ImageController::class, 'delete']);
+    
+    // Enhanced image management endpoints (new)
+    $router->post('/upload/tutorial', [ImageController::class, 'uploadTutorial']);
+    $router->get('/images', [ImageController::class, 'index']);
+    $router->get('/images/{id}', [ImageController::class, 'show']);
+    $router->put('/images/{id}', [ImageController::class, 'update']);
+    $router->get('/images/stats', [ImageController::class, 'stats']);
+    $router->get('/images/orphaned', [ImageController::class, 'orphaned']);
+    
+    // Post-specific image endpoints (new)
+    $router->get('/posts/{postId}/images', [ImageController::class, 'getPostImages']);
+    $router->get('/posts/{postId}/steps', [ImageController::class, 'getTutorialSteps']);
+    $router->put('/posts/{postId}/images/reorder', [ImageController::class, 'reorderImages']);
 });
 
 // Serve uploaded files (public access)

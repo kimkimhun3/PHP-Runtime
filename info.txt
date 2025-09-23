@@ -169,3 +169,44 @@ Response:
   },
   "message": "Posts retrieved successfully"
 }
+
+
+📋 Complete Endpoint Summary
+Your current Routes.php provides these endpoints:
+Public (No Auth Required):
+
+GET /api/health
+GET /api/debug/routes (dev only)
+GET /api/posts
+GET /api/posts/{slug}
+GET /api/posts/tags
+GET /api/posts/tag/{tag}
+GET /api/stats
+GET /uploads/{filename}
+
+Auth Required:
+
+POST /api/auth/login
+POST /api/auth/logout
+GET /api/auth/verify
+POST /api/auth/refresh
+
+Admin Only:
+
+GET /api/admin/posts
+POST /api/admin/posts
+GET /api/admin/posts/{id}
+PUT /api/admin/posts/{id}
+DELETE /api/admin/posts/{id}
+PATCH /api/admin/posts/{id}/publish
+POST /api/admin/upload
+DELETE /api/admin/upload/{filename}
+POST /api/admin/upload/tutorial
+GET /api/admin/images
+GET /api/admin/images/{id}
+PUT /api/admin/images/{id}
+GET /api/admin/images/stats
+GET /api/admin/images/orphaned
+GET /api/admin/posts/{postId}/images
+GET /api/admin/posts/{postId}/steps
+PUT /api/admin/posts/{postId}/images/reorder
